@@ -1,0 +1,3 @@
+El número de letras que tiene la palabra más larga son: 11
+La palabra más corta tiene 3 letras y la palabra más larga tiene 11 letras.
+El prefijo común de las palabras es: cal
