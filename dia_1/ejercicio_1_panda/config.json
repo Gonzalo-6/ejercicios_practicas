@@ -1,0 +1,7 @@
+{
+  "host": "localhost",
+  "database": "mi_base_datos",
+  "user": "postgres",
+  "password": "1234",
+  "port": 5432
+}
