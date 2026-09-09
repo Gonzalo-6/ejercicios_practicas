@@ -1,8 +1,13 @@
 import pandas as pd
 import os
+import sys
+print(sys.path)
 
 
-from main import open_connection
+print("Working dir:", os.getcwd())
+
+
+from dia_1.ejercicio_1_panda.main import open_connection
 
 json_path = "config/config.json"
 print("Existe archivo:", os.path.exists(json_path))
@@ -39,3 +44,5 @@ def get_order_total(json_path, order_id):
 df = get_order_total("config/config.json", 10248)
 
 print(df)
+
+
