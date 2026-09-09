@@ -1,6 +1,6 @@
 {
   "host": "localhost",
-  "database": "mi_base_datos",
+  "database": "ejercicio_1",
   "user": "postgres",
   "password": "1234",
   "port": 5432

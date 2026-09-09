@@ -1,11 +1,16 @@
 import psycopg2
 import json
+import os
 
+json_path = "config/config.json"
+print("Existe archivo:", os.path.exists(json_path))
+
+print("Ruta que se está usando:", json_path)
 
 def open_connection(json_path):
     try:
         # Leer el fichero JSON
-        with open(json_path, 'r') as file:
+        with open(json_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
 
         # Crear conexión
@@ -20,10 +25,10 @@ def open_connection(json_path):
         return conn
 
     except Exception as e:
-        print("Error al conectar a la base de datos:", e)
+        print("Error real: ", e)
         return None
 
-conexion = open_connection("config.json")
+conexion = open_connection("config/config.json")
 
 if conexion:
     print("Conexión correcta")
