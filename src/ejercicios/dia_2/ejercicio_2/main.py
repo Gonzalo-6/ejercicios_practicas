@@ -7,7 +7,7 @@ print(sys.path)
 print("Working dir:", os.getcwd())
 
 
-from dia_1.ejercicio_1_panda.main import open_connection
+from src.ejercicios.dia_1.ejercicio_1_panda.main import open_connection
 
 json_path = "config/config.json"
 print("Existe archivo:", os.path.exists(json_path))
