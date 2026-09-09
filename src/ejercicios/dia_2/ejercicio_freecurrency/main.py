@@ -66,3 +66,4 @@ Inicial: 200 TRY
 Después de comprar INR (2023-01-01): {inr_amount}
 Después de vender (2024-03-04): {try_amount}
 """)
+
