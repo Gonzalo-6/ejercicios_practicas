@@ -1,5 +1,6 @@
 import pandas as pd
 import requests
+import os
 from src.db.connection import open_connection
 
 # Llamar a la base de datos
@@ -37,13 +38,28 @@ def calcular_total(products_df, compra_df):
 
 # Convertir de USD a GBP
 def convertir_a_gbp(total_usd):
-    url = f"https://api.exchangerate.host/convert?from=USD&to=GBP&amount={total_usd}"
+    API_KEY = "fca_live_Rzl47fBD06wWF5aDQWpVyqfmGTbVqBY0rf0peyEC"  
     
-    response = requests.get(url)
+    
+    url = "https://api.freecurrencyapi.com/v1/latest"
+    
+    params = {
+        "apikey": API_KEY,
+        "base_currency": "USD",
+        "currencies": "GBP"
+    }
+    
+    response = requests.get(url, params=params)
     data = response.json()
     
-    return data.get("result", 0)
-
+    print("Respuesta API:", data)  # DEBUG
+    
+    if "data" not in data or "GBP" not in data["data"]:
+        raise ValueError("Error en la API de conversión")
+    
+    tasa = data["data"]["GBP"]
+    
+    return total_usd * tasa
 
 #Función principal
 def main():
