@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 
 # funcion para obetener el precio en la api de fakestoreapi.com
+
 def get_product_price():
     url = "https://fakestoreapi.com/products"
     response = requests.get(url)
@@ -51,6 +52,7 @@ def convert_currency(amount, from_currency, to_currency, date):
 
 
 # precio de eth con la api CoinGecko
+
 def get_eth_price_yesterday():
     yesterday = datetime.now() - timedelta(days=1)
     date_str = yesterday.strftime("%d-%m-%Y")  # formato CoinGecko
@@ -89,6 +91,7 @@ def timeline_conversiones():
         "eth_yesterday": eth_amount
     }
 
+# resultado final del dinero en eth que tienes
 
 result = timeline_conversiones()
 print(f"""
