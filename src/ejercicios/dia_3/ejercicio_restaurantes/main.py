@@ -1,12 +1,28 @@
 from dotenv import load_dotenv
+from src.db.connection import open_connection
 import requests
 import pandas as pd
 import os
+import math
+import psycopg2
+
 
 
 load_dotenv()
 API_KEY = os.getenv("GOOGLE_API_KEY")
-print("API_KEY:", API_KEY)
+
+# Calcular distancia
+
+def calcular_distancia(lat1, lon1, lat2, lon2):
+    R = 6371  # km
+    
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    
+    return R * c
 
 # Función: obtener coordenadas
 def get_coords(direccion):
@@ -20,9 +36,7 @@ def get_coords(direccion):
     response = requests.get(url, params=params)
     data = response.json()
     
-    print("STATUS:", data.get("status"))
-    print("FULL RESPONSE:", data)
-
+    
     if not data.get("results"):
         raise ValueError("No se encontraron coordenadas para la dirección")
     
@@ -41,31 +55,60 @@ def get_restaurantes(lat, lng):
         "key": API_KEY
     }
     
-    response = requests.get(url, params=params)
-    data = response.json()
+    data = requests.get(url, params=params).json()
 
-    if not data.get("results"):
-        raise ValueError("No se encontraron restaurantes")
+    if data.get("status") != "OK":
+        raise ValueError(f"Error API Google: {data.get('status')}")
     
-    return data["results"]
+    return data.get("results", [])
+
+
 
 
 # Función: convertir a dataframe
-def to_dataframe(restaurantes):
+def to_dataframe(restaurantes, origen_lat, origen_lng, ):
     data = []
     
     for r in restaurantes:
-        data= [
-             {
-            "nombre": r.get("name"),
-            "direccion": r.get("vicinity")
-        }
-        ]
+        lat = r["geometry"]["location"]["lat"]
+        lng = r["geometry"]["location"]["lng"]
         
-    if not data:
-            raise ValueError("No se encontraron resultados") 
+        distancia = calcular_distancia(origen_lat, origen_lng, lat, lng)
+        
+        data.append({
+            "nombre": r.get("name"),
+            "direccion": r.get("vicinity"),
+            "rating": r.get("rating"),
+            "distancia_km": distancia
+        })
     
     return pd.DataFrame(data)
+
+# Obtener los mejores restaurantes
+def obtener_mejores(df):
+    mas_cercano = df.loc[df["distancia_km"].idxmin()]
+    mejor_valorado = df.loc[df["rating"].idxmax()]
+    
+    return mas_cercano, mejor_valorado
+
+# Guardar en PostgreSQL
+def guardar_en_bd(df):
+    conn = open_connection("config/config1.json")
+
+    if conn is None: 
+        raise ValueError("No se puede conectar a as base de datos")
+       
+    cursor = conn.cursor()
+    
+    for _, row in df.iterrows():
+        cursor.execute("""
+            INSERT INTO api_google.restaurantes (nombre, direccion, rating, distancia_km)
+            VALUES (%s, %s, %s, %s)
+        """, (row["nombre"], row["direccion"], row["rating"], row["distancia_km"]))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 
 # Función principal
@@ -74,11 +117,19 @@ def ejercicio_restaurantes():
     
     lat, lng = get_coords(direccion)
     restaurantes = get_restaurantes(lat, lng)
-    df = to_dataframe(restaurantes)
+    
+    df = to_dataframe(restaurantes, lat, lng)
+    
+    mas_cercano, mejor_valorado = obtener_mejores(df)
+    
+    print("\nMás cercano:\n", mas_cercano)
+    print("\nMejor valorado:\n", mejor_valorado)
+    
+    guardar_en_bd(df)
     
     return df
 
-    
 if __name__ == "__main__":
     df = ejercicio_restaurantes()
     print(df)
+

@@ -1,0 +1,7 @@
+{
+  "host": "localhost",
+  "database": "api_google_db",
+  "user": "postgres",
+  "password": "1234",
+  "port": 5432
+}
